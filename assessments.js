@@ -1,18 +1,22 @@
 const axios = require('axios');
 const faker = require('faker');
 const https = require('https');
+const parse = require('node-html-parser').parse;
+const FormData = require('form-data');
+const qs = require('querystring')
 
 // PCAAT Login Cookie Value
 adToken = "882D78B183E88E608BA3A8A45CC0812AAAA300E4AF2B96FD08E6BB0B53440A64932C87AF0F02A65B4E014805FAAC1B830A268BA1DC897AC2CF0CA32BFE99BBCA9D6E7402E3BDE300CD0FC78FF2A6D8AA619CC80544E62C4F1E6B3B18CC8F56BA"
 
 // PCAAT URL
-baseurl = "https://192.168.38.133:45455";
+baseurl = "https://pcaat.stuible.cloud";
 
 
 
 assessmentCount = 0;
 
-createAssessment();
+login();
+//createAssessment();
 
 function createAssessment() {
     assessmentCount++;
@@ -75,4 +79,61 @@ function createAssessment() {
         .catch(function (error) {
             console.log(error);
         });
+}
+
+async function login() {
+    const { data } = await axios.get(baseurl + "/home/login");
+
+    const root = parse(data);
+
+    const inputs = root.querySelectorAll('input');
+
+    const verificationElement = inputs.find(item => {
+        return item.rawAttrs.includes(`name="__RequestVerificationToken"`);
+    })
+
+    const verificationToken = verificationElement.rawAttrs.substring(
+        verificationElement.rawAttrs.lastIndexOf(`value="`) + 7,
+        verificationElement.rawAttrs.lastIndexOf(`"`)
+    );
+    console.log("Logging into PCAAT");
+
+    const requestBody = {
+        Username: 'dev',
+        Password: '',
+        '__RequestVerificationToken': verificationToken
+    }
+
+    const config = {
+        headers: {
+            //Host: "pcaat.stuible.cloud",
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Cookie: "__RequestVerificationToken=" + verificationToken + ";",
+            // "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:75.0) Gecko/20100101 Firefox/75.0",
+            // "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            // "Accept-Language": "en-CA,en-US;q=0.7,en;q=0.3",
+            // "Upgrade-Insecure-Requests": "1",
+            // Origin: "https://pcaat.stuible.cloud",
+            // Connection: "keep-alive",
+            // Referer: "https://pcaat.stuible.cloud/home/login",
+        }
+    }
+
+    // const bodyFormData = new FormData();
+    // bodyFormData.append('__RequestVerificationToken', verificationToken);
+    // bodyFormData.append('Username', 'dev');
+    // bodyFormData.append('Password', '');
+
+    //console.log(bodyFormData.getHeaders())
+
+    axios.post(baseurl + "/home/login?ReturnUrl=%2fhome%2flogin", qs.stringify(requestBody), config)
+        .then(response => {
+            console.log(response);
+        })
+        .catch(error => {
+            console.log(error);
+        })
+
+
+
 }
