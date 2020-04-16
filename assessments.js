@@ -3,7 +3,7 @@ const faker = require('faker');
 const https = require('https');
 
 // PCAAT Login Cookie Value
-adToken = "882D78B183E88E608BA3A8A45CC0812AAAA300E4AF2B96FD08E6BB0B53440A64932C87AF0F02A65B4E014805FAAC1B830A268BA1DC897AC2CF0CA32BFE99BBCA9D6E7402E3BDE300CD0FC78FF2A6D8AA619CC80544E62C4F1E6B3B18CC8F56BA"
+adToken = "3EAB1892FBA1A1132DE06D436C4A2446B31E2C85837B1F522B565C168F884E54ED24E1A687DC14D9982B37D0BC1F9F4352DB40F67A49E02D37644BC68D0708EA56CA3527A77FCBF08681C65121407661BD228B9A586A5EDF255A1BE93A7C643F"
 
 // PCAAT URL
 baseurl = "https://192.168.38.133:45455";
@@ -72,7 +72,7 @@ function createAssessment() {
             console.log(`New Assessment Created!  We've made ${assessmentCount} of these so far`);
             createAssessment();
         })
-        .catch(function (error) {
-            console.log(error);
+        .catch(function ({response}) {
+            console.log(response.data.message);
         });
 }
