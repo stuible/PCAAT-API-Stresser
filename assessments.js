@@ -2,16 +2,26 @@ const axios = require('axios');
 const faker = require('faker');
 const https = require('https');
 
+const chalk = require('chalk');
+const clear = require('clear');
+const figlet = require('figlet');
+const CLI = require('clui');
+const Spinner = CLI.Spinner;
+
+
 // PCAAT Login Cookie Value
-adToken = "3EAB1892FBA1A1132DE06D436C4A2446B31E2C85837B1F522B565C168F884E54ED24E1A687DC14D9982B37D0BC1F9F4352DB40F67A49E02D37644BC68D0708EA56CA3527A77FCBF08681C65121407661BD228B9A586A5EDF255A1BE93A7C643F"
+adToken = "B6519D9336FEBC870DA9A528640D38415ADA4423FEE377FBFE7B25411C13D1E0CD0FD9BEAC4F740BEFDCD95C41EB3AEB10442B702F16414F9CB3B198B3CC79F4D7D58643D801ED2789D233DB6BCB5144BED6B455A6183723571254EF6FB3F6EA"
 
 // PCAAT URL
 baseurl = "https://192.168.38.133:45455";
 
 
 
-assessmentCount = 0;
+let assessmentCount = 0;
 
+let failCount = 0;
+
+clear();
 createAssessment();
 
 function createAssessment() {
@@ -62,6 +72,9 @@ function createAssessment() {
         rejectUnauthorized: false
     });
 
+    //clear();
+
+
     axios.post(`${baseurl}/api/assessments`, data, {
         headers: {
             Cookie: `ADAuthCookie=${adToken};`
@@ -69,10 +82,32 @@ function createAssessment() {
         httpsAgent: agent
     })
         .then(function (response) {
-            console.log(`New Assessment Created!  We've made ${assessmentCount} of these so far`);
+            //console.log(`New Assessment Created!   We've made ${assessmentCount} of these so far`);
+            clear();
+            console.log(
+                chalk.blueBright(
+                    figlet.textSync('PCAAT', { horizontalLayout: 'full' })
+                )
+            );
+            console.log(
+                chalk.green(
+                    " GENERATING ASSESSMENTS... \n"
+                )
+            );
+            console.log(` ${assessmentCount} Created | ${response.data.id} Total`);
+
             createAssessment();
         })
-        .catch(function ({response}) {
-            console.log(response.data.message);
+        .catch(function ({ response }) {
+            failCount++;
+
+            if (failCount < 5) {
+                console.log("trying again...")
+                createAssessment();
+            }
+            else {
+                console.log(response.data.message);
+            }
+
         });
 }
